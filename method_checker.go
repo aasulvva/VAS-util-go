@@ -5,8 +5,13 @@ import (
 	"net/http"
 )
 
-func MethodCheckHandler(next http.HandlerFunc, allowedMethods []string) http.HandlerFunc {
+func MethodCheckHandler(next http.HandlerFunc, allowedMethods []string, corsUrl string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			enableCors(&w, corsUrl)
+			return
+		}
+
 		allowed := false
 		for _, method := range allowedMethods {
 			if r.Method == method {
@@ -19,6 +24,7 @@ func MethodCheckHandler(next http.HandlerFunc, allowedMethods []string) http.Han
 			return
 		}
 
+		enableCors(&w, corsUrl)
 		next.ServeHTTP(w, r)
 	})
 }
